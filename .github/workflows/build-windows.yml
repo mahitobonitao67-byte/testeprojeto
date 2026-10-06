@@ -1,0 +1,31 @@
+name: Compilar CidadeSemLei.exe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Preparar Visual Studio
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath`) do set VS_PATH=%%i
+          call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+
+      - name: Compilar Cidade Sem Lei
+        shell: cmd
+        run: |
+          cl /nologo /EHsc /O2 /DUNICODE /D_UNICODE CidadeSemLei.cpp user32.lib gdi32.lib /link /SUBSYSTEM:WINDOWS /OUT:CidadeSemLei.exe
+
+      - name: Disponibilizar EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: CidadeSemLei-Windows-EXE
+          path: CidadeSemLei.exe
+          if-no-files-found: error
+          retention-days: 7
